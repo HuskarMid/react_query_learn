@@ -12,10 +12,12 @@ export type PaginatedResult<T> = {
     next: number;
     pages: number;
     prev: number;
-}
+
+    toReversed: () => T[];
+}   
 
 export type TodoDto = {
-    id: number;
+    id: string;
     text: string;
     done: boolean;
     userId: string;
@@ -23,11 +25,12 @@ export type TodoDto = {
 
 
 export const todoListApi = {
-    getTodoListQueryOptions: (page: number) => {
-        return queryOptions<PaginatedResult<TodoDto>, Error, TodoDto[]>({
-            queryKey: ["tasks", "list", { page }],
+    baseKey: 'tasks',
+    getTodoListQueryOptions: () => {
+        return queryOptions<TodoDto[]>({
+            queryKey: [todoListApi.baseKey, 'list'],
             queryFn: async (meta) => {
-                const response = await jsonApiInstance<PaginatedResult<TodoDto>>(`tasks?_page=${page}&_per_page=10`, {
+                const response = await jsonApiInstance<TodoDto[]>(`tasks`, {
                     method: "GET",
                     signal: meta.signal
                 });
@@ -38,7 +41,7 @@ export const todoListApi = {
 
     getTodoListInfiniteQueryOptions: () => {
         return infiniteQueryOptions<PaginatedResult<TodoDto>, Error, TodoDto[]>({
-            queryKey: ["tasks", "list"],
+            queryKey: [todoListApi.baseKey, 'list'],
             queryFn: async (meta) => {
                 const response = await jsonApiInstance<PaginatedResult<TodoDto>>(`tasks?_page=${meta.pageParam}&_per_page=10`, {
                     method: "GET",
@@ -59,8 +62,8 @@ export const todoListApi = {
             json: data
         })
     },
-    updateTodo: (id: string, data: Partial<TodoDto>) => {
-        return jsonApiInstance<TodoDto>(`tasks/${id}`, {
+    updateTodo: (data: Partial<TodoDto> & {id: string}) => {
+        return jsonApiInstance<TodoDto>(`tasks/${data.id}`, {
             method: "PATCH",
             json: data
         })
@@ -71,5 +74,4 @@ export const todoListApi = {
             json: {}
         }); 
     },
-
 }

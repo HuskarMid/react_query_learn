@@ -2,15 +2,28 @@
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "../shared/api/query-client"
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { Provider } from "react-redux";
+import { store } from "../shared/redux";
+import React from "react";
 
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
+    const [isClient, setIsClient] = React.useState(false);
+
+    React.useEffect(() => {
+        setIsClient(true);
+    }, []);
+
+    if (!isClient) {
+        return null; // или loading state
+    }
+
     return (
         <QueryClientProvider client={queryClient}>
-            <div>
+            <Provider store={store}>
                 <Header />
                 {children}
                 <Footer />
-            </div>
+            </Provider>
             <ReactQueryDevtools initialIsOpen={false} />
         </QueryClientProvider>
     )

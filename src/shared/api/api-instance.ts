@@ -37,6 +37,5 @@ export const jsonApiInstance = async <T>(
     }
 
     const data = await result.json();
-    console.log('API Response:', data);
     return data;
 }

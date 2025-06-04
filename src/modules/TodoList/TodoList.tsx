@@ -1,57 +1,26 @@
 'use client'
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { todoListApi, TodoDto } from "./api";
-import { useState } from "react";
+
+import { useDeleteTodo } from "./use-delete-todo";
+import { useToggleTodo } from "./use-toggle-todo";
+import { useCreateTodo } from "./use-create-todo";
 import { useTodoList } from "./use-todo-list";
-import { nanoid } from "nanoid";
+import { useUser } from "../auth/use-user";
+import { UserDto } from "../auth/api";
 
 const TodoList = () => {
-    const [enabled, setEnabled] = useState<boolean>(false);
+    const {error, todoItems, isLoading} = useTodoList();
+    const { data: user, isLoading: isUserLoading } = useUser();
 
-    const {error, todoItems, isLoading, cursor} = useTodoList();
+    const {handleCreate, isPending, isError, error: createTodoError} = useCreateTodo();
+    const {handleDelete, getIsPending, isError: isDeleteError, error: deleteTodoError} = useDeleteTodo();
+    const {toggleTodo} = useToggleTodo();
 
-    const queryClient = useQueryClient();
-
-    const createTodoMutation = useMutation({
-        mutationFn: async (data: TodoDto) => {
-            console.log('Creating todo:', data);
-            const response = await todoListApi.createTodo(data);
-            console.log('Create response:', response);
-            return response({ signal: undefined });
-        },
-        onSuccess: () => {
-            console.log('Todo created successfully');
-            queryClient.invalidateQueries({ queryKey: ["tasks", "list"] })
-        },
-        onError: (error) => {
-            console.error('Error creating todo:', error);
-        }
-    })
-
-    const handleCreate = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        const formData = new FormData(e.currentTarget);
-
-        const text = String(formData.get("text") ?? '');
-        if (!text.trim()) return;
-
-        createTodoMutation.mutate({
-            id: Number(nanoid()),
-            done: false,
-            text: text.trim(),
-            userId: '1'
-        })
-
-        e.currentTarget.reset();
-    }
-
-
-    if (isLoading) return <div>Loading...</div>
+    if (isLoading || isUserLoading) return <div>Loading...</div>
     if (error) return <div>Error: {error.message}</div>
 
     return (
         <div className="p-5 mx-auto max-w-[1200px]">
-            <h1 className="text-4xl font-bold underline mb-5 mb-5">Todo List</h1>
+            <h1 className="text-4xl mb-5 mb-5">Todo List owner: <span className="underline font-bold">{user?.login}</span></h1>
 
             <form className="flex gap-2 mb-5" onSubmit={handleCreate}>
                 <input 
@@ -61,26 +30,39 @@ const TodoList = () => {
                     required
                 />
                 <button 
-                    className="border border-slate-300 rounded p-2"
-                    disabled={createTodoMutation.isPending}
+                    className="border border-teal-300 rounded p-2 disabled:opacity-50"
+                    disabled={isPending}
                 >
-                    {createTodoMutation.isPending ? 'Создание...' : 'Создать'}
+                    {isPending ? 'Создание...' : 'Создать'}
                 </button>
             </form>
-            {createTodoMutation.isError && (
+            {isError && (
                 <div className="text-red-500 mb-5">
-                    Ошибка при создании: {createTodoMutation.error.message}
+                    Ошибка при создании: {createTodoError?.message}
                 </div>
             )}
 
             <div className={`flex flex-col gap-4`}>
                 {todoItems?.map(todo => (
-                    <div className="border border-slate-300 rounded p-3 mb-5" key={todo?.id ?? Math.random()}>
-                        <span>{todo?.text}</span>
+                    <div className="border border-slate-300 rounded p-3 mb-5 flex justify-between" key={todo?.id ?? Math.random()}>
+                        <div className="flex items-center gap-2">
+                            <input 
+                                type="checkbox" 
+                                checked={todo.done} 
+                                onChange={() => toggleTodo(todo.id, todo.done)}
+                            />
+                            <span>{todo?.text}</span>
+                        </div>
+                        <button 
+                            className="border border-teal-300 rounded p-2 disabled:opacity-50 cursor-pointer hover:bg-teal-300"
+                            disabled={getIsPending(todo.id)}
+                            onClick={() => handleDelete(todo.id)}
+                        >
+                            {getIsPending(todo.id) ? 'Удаление...' : 'Удалить'}
+                        </button>
                     </div>
                 ))}
             </div>
-            {cursor}
         </div>
     )
 }
