@@ -14,7 +14,6 @@ const TodoList = () => {
     const {handleCreate, isLoadingCreateTodo} = useCreateTodo()
     const {handleDelete, getIsPending} = useDeleteTodo();
     const {toggleTodo} = useToggleTodo();
-    console.log(isLoadingCreateTodo)
 
     if (isLoading || isUserLoading) return <div>Loading...</div>
     if (error) return <div>Error: {error.message}</div>

@@ -54,7 +54,6 @@ export const todoListApi = {
     },
 
     createTodo: (data: TodoDto) => {
-        console.log('API createTodo called with:', data);
         return jsonApiInstance<TodoDto>(`tasks`, {
             method: "POST",
             json: data

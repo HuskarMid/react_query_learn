@@ -18,6 +18,7 @@ export const createTodoThunk = (text: string): AppThunk => async (dispatch, getS
         userId: userId ?? ''
     }
 
+    // Реализация optimistic create
     queryClient.cancelQueries({
         queryKey: [todoListApi.baseKey] 
     })
