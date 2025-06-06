@@ -11,9 +11,10 @@ const TodoList = () => {
     const {error, todoItems, isLoading} = useTodoList();
     const { data: user, isLoading: isUserLoading } = useUser();
 
-    const {handleCreate, isPending, isError, error: createTodoError} = useCreateTodo();
-    const {handleDelete, getIsPending, isError: isDeleteError, error: deleteTodoError} = useDeleteTodo();
+    const {handleCreate, isLoadingCreateTodo} = useCreateTodo()
+    const {handleDelete, getIsPending} = useDeleteTodo();
     const {toggleTodo} = useToggleTodo();
+    console.log(isLoadingCreateTodo)
 
     if (isLoading || isUserLoading) return <div>Loading...</div>
     if (error) return <div>Error: {error.message}</div>
@@ -31,16 +32,11 @@ const TodoList = () => {
                 />
                 <button 
                     className="border border-teal-300 rounded p-2 disabled:opacity-50"
-                    disabled={isPending}
+                    disabled={isLoadingCreateTodo}
                 >
-                    {isPending ? 'Создание...' : 'Создать'}
+                    {isLoadingCreateTodo ? 'Создание...' : 'Создать'}
                 </button>
             </form>
-            {isError && (
-                <div className="text-red-500 mb-5">
-                    Ошибка при создании: {createTodoError?.message}
-                </div>
-            )}
 
             <div className={`flex flex-col gap-4`}>
                 {todoItems?.map(todo => (

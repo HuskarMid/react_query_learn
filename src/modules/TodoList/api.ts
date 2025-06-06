@@ -1,8 +1,6 @@
 import { jsonApiInstance } from "@/src/shared/api/api-instance";
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 
-const BASE_URL = "http://localhost:3001"
-
 export type PaginatedResult<T> = {
     data: T[];
     first: number;

@@ -21,7 +21,7 @@ export const authSlice = createSlice({
             localStorage.setItem("userId", action.payload.userId);
             state.userId = action.payload.userId;
         },
-        removeUser: (state, action: PayloadAction<{userId: string}>) => {
+        removeUser: (state) => {
             localStorage.removeItem("userId");
             state.userId = undefined;
         },
